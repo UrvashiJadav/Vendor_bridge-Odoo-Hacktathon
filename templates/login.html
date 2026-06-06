@@ -253,11 +253,19 @@ async function loginUser(){
             localStorage.setItem("email", email);
 
             if(data.role === "admin"){
-                localStorage.setItem("admin", username);
-                window.location.href = "/admin";
+                window.location.href="/admin";
             }
+
+            else if(data.role === "manager"){
+                 window.location.href="/manager";
+            }
+
+            else if(data.role === "procurement"){
+                window.location.href="/procurement";
+            }
+
             else{
-                window.location.href = "/home";
+                 window.location.href="/home";
             }
         }
         else{

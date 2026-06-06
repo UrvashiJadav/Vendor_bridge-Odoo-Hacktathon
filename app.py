@@ -111,7 +111,7 @@ def register():
         email=email,
         password=hashed_password,
         phone=phone,
-        role="user"
+        role="vendor"
     )
 
     db.session.add(new_user)
@@ -132,13 +132,22 @@ def login():
     password = reqdata.get("password")
 
     if not username or not username.strip():
-        return jsonify({"status": "error", "message": "Invalid Username"})
+        return jsonify({
+            "status": "error",
+            "message": "Invalid Username"
+        })
 
     if not email or not email.strip():
-        return jsonify({"status": "error", "message": "Invalid Email"})
+        return jsonify({
+            "status": "error",
+            "message": "Invalid Email"
+        })
 
     if not password or not password.strip():
-        return jsonify({"status": "error", "message": "Invalid Password"})
+        return jsonify({
+            "status": "error",
+            "message": "Invalid Password"
+        })
 
     username = username.strip().lower()
     email = email.strip().lower()
@@ -156,19 +165,26 @@ def login():
         })
 
     user = User.query.filter(
-        (User.username == username) | (User.email == email)
+        (User.username == username) |
+        (User.email == email)
     ).first()
 
     if not user:
-        return jsonify({"status": "error", "message": "User not found"})
+        return jsonify({
+            "status": "error",
+            "message": "User not found"
+        })
 
     if not check_password_hash(user.password, password):
-        return jsonify({"status": "error", "message": "Wrong Password"})
+        return jsonify({
+            "status": "error",
+            "message": "Wrong Password"
+        })
 
     return jsonify({
         "status": "success",
         "message": "Login Successful",
-        "role": "user",
+        "role": user.role,
         "username": user.username
     })
 
@@ -229,5 +245,44 @@ def reset_password():
 
     return jsonify({"status": "success", "message": "Password Updated Successfully"})
 
+@app.route('/create-employee', methods=['POST'])
+def create_employee():
+
+    reqdata = request.get_json()
+
+    name = reqdata.get("name")
+    username = reqdata.get("username")
+    email = reqdata.get("email")
+    password = reqdata.get("password")
+    role = reqdata.get("role")
+
+    existing = User.query.filter(
+        (User.username == username) |
+        (User.email == email)
+    ).first()
+
+    if existing:
+        return jsonify({
+            "status":"error",
+            "message":"User already exists"
+        })
+
+    user = User(
+        name=name,
+        username=username,
+        email=email,
+        password=generate_password_hash(password),
+        role=role
+    )
+
+    db.session.add(user)
+    db.session.commit()
+
+    return jsonify({
+        "status":"success",
+        "message":"Employee Created Successfully"
+    })
+
 if __name__ == "__main__":
     app.run(debug=True)
+

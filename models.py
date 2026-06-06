@@ -2,38 +2,36 @@ from extensions import db
 
 class User(db.Model):
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(
+        db.Integer,
+        primary_key=True
+    )
 
     name = db.Column(
-        db.String(100),
-        nullable=False
+        db.String(100)
     )
 
     username = db.Column(
         db.String(100),
-        unique=True,
-        nullable=False
+        unique=True
     )
 
     email = db.Column(
         db.String(100),
-        unique=True,
-        nullable=False
+        unique=True
     )
 
     password = db.Column(
-        db.String(100),
-        nullable=False
+        db.String(255)
     )
 
     phone = db.Column(
-        db.String(20),
-        nullable=True
+        db.String(20)
     )
 
     role = db.Column(
-        db.String(20),
-        default="user"
+        db.String(50),
+        default="vendor"
     )
 
     def __repr__(self):
