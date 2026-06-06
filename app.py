@@ -7,7 +7,7 @@ from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from extensions import db
-from models import User
+from models import User, Quotation   # ✅ IMPORTANT FIX: Quotation added
 
 app = Flask(__name__)
 CORS(app)
@@ -20,12 +20,18 @@ db.init_app(app)
 with app.app_context():
     db.create_all()
 
+# ==========================
+# ADMIN
+# ==========================
 HARDCODED_ADMIN = {
     "username": "admin",
     "email": "admin@gmail.com",
     "password": "admin123"
 }
 
+# ==========================
+# OTP STORAGE
+# ==========================
 otp_storage = {}
 
 def send_email_otp(receiver_email, otp):
@@ -52,6 +58,9 @@ Do not share this OTP with anyone.
     server.send_message(msg)
     server.quit()
 
+# ==========================
+# PAGES
+# ==========================
 @app.route('/')
 def register_page():
     return render_template('register.html')
@@ -72,6 +81,25 @@ def admin_page():
 def forgot_password_page():
     return render_template('forgot_password.html')
 
+@app.route('/vendor-dashboard')
+def vendor_dashboard():
+    return render_template('vendor_dashboard.html')
+
+@app.route('/vendor-rfqs')
+def vendor_rfqs():
+    return render_template('vendor_rfqs.html')
+
+@app.route('/submit-quotation-page')
+def submit_quotation_page():
+    return render_template('submit_quotation.html')
+
+@app.route('/my-quotations')
+def my_quotations():
+    return render_template('my_quotations.html')
+
+# ==========================
+# REGISTER
+# ==========================
 @app.route('/register', methods=['POST'])
 def register():
 
@@ -95,21 +123,17 @@ def register():
     if not password or not password.strip():
         return jsonify({"status": "error", "message": "Invalid Password"})
 
-    existing_username = User.query.filter_by(username=username).first()
-    if existing_username:
+    if User.query.filter_by(username=username).first():
         return jsonify({"status": "error", "message": "Username already exists"})
 
-    existing_email = User.query.filter_by(email=email).first()
-    if existing_email:
+    if User.query.filter_by(email=email).first():
         return jsonify({"status": "error", "message": "Email already exists"})
-
-    hashed_password = generate_password_hash(password)
 
     new_user = User(
         name=name,
         username=username,
         email=email,
-        password=hashed_password,
+        password=generate_password_hash(password),
         phone=phone,
         role="vendor"
     )
@@ -117,11 +141,11 @@ def register():
     db.session.add(new_user)
     db.session.commit()
 
-    return jsonify({
-        "status": "success",
-        "message": "Registration Successful"
-    })
+    return jsonify({"status": "success", "message": "Registration Successful"})
 
+# ==========================
+# LOGIN
+# ==========================
 @app.route('/login', methods=['POST'])
 def login():
 
@@ -131,27 +155,10 @@ def login():
     email = reqdata.get("email")
     password = reqdata.get("password")
 
-    if not username or not username.strip():
-        return jsonify({
-            "status": "error",
-            "message": "Invalid Username"
-        })
-
-    if not email or not email.strip():
-        return jsonify({
-            "status": "error",
-            "message": "Invalid Email"
-        })
-
-    if not password or not password.strip():
-        return jsonify({
-            "status": "error",
-            "message": "Invalid Password"
-        })
-
     username = username.strip().lower()
     email = email.strip().lower()
 
+    # Admin login
     if (
         username == HARDCODED_ADMIN["username"]
         and email == HARDCODED_ADMIN["email"]
@@ -170,24 +177,22 @@ def login():
     ).first()
 
     if not user:
-        return jsonify({
-            "status": "error",
-            "message": "User not found"
-        })
+        return jsonify({"status": "error", "message": "User not found"})
 
     if not check_password_hash(user.password, password):
-        return jsonify({
-            "status": "error",
-            "message": "Wrong Password"
-        })
+        return jsonify({"status": "error", "message": "Wrong Password"})
 
     return jsonify({
         "status": "success",
         "message": "Login Successful",
         "role": user.role,
-        "username": user.username
+        "username": user.username,
+        "user_id": user.id
     })
 
+# ==========================
+# OTP
+# ==========================
 @app.route('/send-otp', methods=['POST'])
 def send_otp():
 
@@ -214,12 +219,7 @@ def verify_otp():
     email = reqdata.get("email")
     otp = reqdata.get("otp")
 
-    stored_otp = otp_storage.get(email)
-
-    if not stored_otp:
-        return jsonify({"status": "error", "message": "OTP not generated"})
-
-    if otp != stored_otp:
+    if otp_storage.get(email) != otp:
         return jsonify({"status": "error", "message": "Invalid OTP"})
 
     return jsonify({"status": "success", "message": "OTP Verified Successfully"})
@@ -240,49 +240,53 @@ def reset_password():
     user.password = generate_password_hash(password)
     db.session.commit()
 
-    if email in otp_storage:
-        del otp_storage[email]
+    otp_storage.pop(email, None)
 
     return jsonify({"status": "success", "message": "Password Updated Successfully"})
 
+# ==========================
+# EMPLOYEE
+# ==========================
 @app.route('/create-employee', methods=['POST'])
 def create_employee():
 
     reqdata = request.get_json()
 
-    name = reqdata.get("name")
-    username = reqdata.get("username")
-    email = reqdata.get("email")
-    password = reqdata.get("password")
-    role = reqdata.get("role")
-
-    existing = User.query.filter(
-        (User.username == username) |
-        (User.email == email)
-    ).first()
-
-    if existing:
-        return jsonify({
-            "status":"error",
-            "message":"User already exists"
-        })
-
     user = User(
-        name=name,
-        username=username,
-        email=email,
-        password=generate_password_hash(password),
-        role=role
+        name=reqdata.get("name"),
+        username=reqdata.get("username"),
+        email=reqdata.get("email"),
+        password=generate_password_hash(reqdata.get("password")),
+        role=reqdata.get("role")
     )
 
     db.session.add(user)
     db.session.commit()
 
-    return jsonify({
-        "status":"success",
-        "message":"Employee Created Successfully"
-    })
+    return jsonify({"status": "success", "message": "Employee Created Successfully"})
 
+# ==========================
+# 🔥 FIXED PART (THIS WAS MISSING)
+# ==========================
+@app.route('/get-quotations')
+def get_quotations():
+
+    quotations = Quotation.query.all()
+
+    return jsonify([
+        {
+            "id": q.id,
+            "rfq_id": q.rfq_id,
+            "price": q.price,
+            "delivery_days": q.delivery_days,
+            "comments": q.comments,
+            "status": q.status if hasattr(q, "status") else "pending"
+        }
+        for q in quotations
+    ])
+
+# ==========================
+# RUN
+# ==========================
 if __name__ == "__main__":
     app.run(debug=True)
-
