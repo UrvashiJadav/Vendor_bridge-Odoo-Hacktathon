@@ -2,16 +2,24 @@ import smtplib
 from email.mime.text import MIMEText
 import random
 
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, session, redirect
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from extensions import db
-from models import User, Quotation   # ✅ IMPORTANT FIX: Quotation added
+from models import User, Quotation
 
 app = Flask(__name__)
 CORS(app)
 
+# ==========================
+# SESSION SECRET (IMPORTANT)
+# ==========================
+app.secret_key = "vendor_bridge_secret_key"
+
+# ==========================
+# DB CONFIG
+# ==========================
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -35,20 +43,11 @@ HARDCODED_ADMIN = {
 otp_storage = {}
 
 def send_email_otp(receiver_email, otp):
-
     sender_email = "demohackathon2026@gmail.com"
     app_password = "udrz wxzt argm zkfm"
 
-    subject = "Password Reset OTP"
-
-    body = f"""
-Your OTP is: {otp}
-
-Do not share this OTP with anyone.
-"""
-
-    msg = MIMEText(body)
-    msg["Subject"] = subject
+    msg = MIMEText(f"Your OTP is: {otp}")
+    msg["Subject"] = "Password Reset OTP"
     msg["From"] = sender_email
     msg["To"] = receiver_email
 
@@ -77,12 +76,10 @@ def home_page():
 def admin_page():
     return render_template('admin_dashboard.html')
 
-@app.route('/forgot-password')
-def forgot_password_page():
-    return render_template('forgot_password.html')
-
 @app.route('/vendor-dashboard')
 def vendor_dashboard():
+    if session.get("role") != "vendor":
+        return redirect("/login")
     return render_template('vendor_dashboard.html')
 
 @app.route('/vendor-rfqs')
@@ -97,80 +94,70 @@ def submit_quotation_page():
 def my_quotations():
     return render_template('my_quotations.html')
 
+@app.route('/redirect-dashboard')
+def redirect_dashboard():
+
+    role = session.get("role")
+
+    if role == "admin":
+        return redirect("/admin")
+
+    elif role == "vendor":
+        return redirect("/vendor-dashboard")
+
+    return redirect("/login")
+
 # ==========================
 # REGISTER
 # ==========================
 @app.route('/register', methods=['POST'])
 def register():
+    data = request.get_json()
 
-    reqdata = request.get_json()
+    if User.query.filter_by(username=data.get("username")).first():
+        return jsonify({"status": "error", "message": "Username exists"})
 
-    name = reqdata.get("name")
-    username = reqdata.get("username")
-    email = reqdata.get("email")
-    password = reqdata.get("password")
-    phone = reqdata.get("phone")
+    if User.query.filter_by(email=data.get("email")).first():
+        return jsonify({"status": "error", "message": "Email exists"})
 
-    if not name or not name.strip():
-        return jsonify({"status": "error", "message": "Invalid Name"})
-
-    if not username or not username.strip():
-        return jsonify({"status": "error", "message": "Invalid Username"})
-
-    if not email or not email.strip():
-        return jsonify({"status": "error", "message": "Invalid Email"})
-
-    if not password or not password.strip():
-        return jsonify({"status": "error", "message": "Invalid Password"})
-
-    if User.query.filter_by(username=username).first():
-        return jsonify({"status": "error", "message": "Username already exists"})
-
-    if User.query.filter_by(email=email).first():
-        return jsonify({"status": "error", "message": "Email already exists"})
-
-    new_user = User(
-        name=name,
-        username=username,
-        email=email,
-        password=generate_password_hash(password),
-        phone=phone,
+    user = User(
+        name=data.get("name"),
+        username=data.get("username"),
+        email=data.get("email"),
+        password=generate_password_hash(data.get("password")),
+        phone=data.get("phone"),
         role="vendor"
     )
 
-    db.session.add(new_user)
+    db.session.add(user)
     db.session.commit()
 
-    return jsonify({"status": "success", "message": "Registration Successful"})
+    return jsonify({"status": "success", "message": "Registered"})
 
 # ==========================
 # LOGIN
 # ==========================
 @app.route('/login', methods=['POST'])
 def login():
+    data = request.get_json()
 
-    reqdata = request.get_json()
+    username = data.get("username", "").strip().lower()
+    email = data.get("email", "").strip().lower()
+    password = data.get("password")
 
-    username = reqdata.get("username")
-    email = reqdata.get("email")
-    password = reqdata.get("password")
+    # ADMIN LOGIN
+    if username == HARDCODED_ADMIN["username"] and email == HARDCODED_ADMIN["email"]:
+        if password == HARDCODED_ADMIN["password"]:
 
-    username = username.strip().lower()
-    email = email.strip().lower()
+            session["role"] = "admin"
+            session["username"] = "admin"
 
-    # Admin login
-    if (
-        username == HARDCODED_ADMIN["username"]
-        and email == HARDCODED_ADMIN["email"]
-        and password == HARDCODED_ADMIN["password"]
-    ):
-        return jsonify({
-            "status": "success",
-            "message": "Admin Login Success",
-            "role": "admin",
-            "username": "admin"
-        })
+            return jsonify({
+                "status": "success",
+                "role": "admin"
+            })
 
+    # USER LOGIN
     user = User.query.filter(
         (User.username == username) |
         (User.email == email)
@@ -180,97 +167,51 @@ def login():
         return jsonify({"status": "error", "message": "User not found"})
 
     if not check_password_hash(user.password, password):
-        return jsonify({"status": "error", "message": "Wrong Password"})
+        return jsonify({"status": "error", "message": "Wrong password"})
+
+    session["role"] = user.role
+    session["user_id"] = user.id
+    session["username"] = user.username
 
     return jsonify({
         "status": "success",
-        "message": "Login Successful",
         "role": user.role,
-        "username": user.username,
         "user_id": user.id
     })
 
 # ==========================
-# OTP
+# REDIRECT AFTER LOGIN (MAIN FIX)
 # ==========================
-@app.route('/send-otp', methods=['POST'])
-def send_otp():
-
-    reqdata = request.get_json()
-    email = reqdata.get("email")
-
-    user = User.query.filter_by(email=email).first()
-
-    if not user:
-        return jsonify({"status": "error", "message": "Email not registered"})
-
-    otp = str(random.randint(100000, 999999))
-    otp_storage[email] = otp
-
-    send_email_otp(email, otp)
-
-    return jsonify({"status": "success", "message": "OTP Sent Successfully"})
-
-@app.route('/verify-otp', methods=['POST'])
-def verify_otp():
-
-    reqdata = request.get_json()
-
-    email = reqdata.get("email")
-    otp = reqdata.get("otp")
-
-    if otp_storage.get(email) != otp:
-        return jsonify({"status": "error", "message": "Invalid OTP"})
-
-    return jsonify({"status": "success", "message": "OTP Verified Successfully"})
-
-@app.route('/reset-password', methods=['POST'])
-def reset_password():
-
-    reqdata = request.get_json()
-
-    email = reqdata.get("email")
-    password = reqdata.get("password")
-
-    user = User.query.filter_by(email=email).first()
-
-    if not user:
-        return jsonify({"status": "error", "message": "User not found"})
-
-    user.password = generate_password_hash(password)
-    db.session.commit()
-
-    otp_storage.pop(email, None)
-
-    return jsonify({"status": "success", "message": "Password Updated Successfully"})
+@app.route('/post-login')
+def post_login():
+    return redirect("/redirect-dashboard")
 
 # ==========================
-# EMPLOYEE
+# SUBMIT QUOTATION
 # ==========================
-@app.route('/create-employee', methods=['POST'])
-def create_employee():
+@app.route('/submit-quotation', methods=['POST'])
+def submit_quotation():
+    data = request.get_json()
 
-    reqdata = request.get_json()
-
-    user = User(
-        name=reqdata.get("name"),
-        username=reqdata.get("username"),
-        email=reqdata.get("email"),
-        password=generate_password_hash(reqdata.get("password")),
-        role=reqdata.get("role")
+    quotation = Quotation(
+        rfq_id=data.get("rfq_id"),
+        vendor_id=data.get("vendor_id"),
+        price=data.get("price"),
+        delivery_days=data.get("delivery_days"),
+        comments=data.get("comments"),
+        status="pending"
     )
 
-    db.session.add(user)
+    db.session.add(quotation)
     db.session.commit()
 
-    return jsonify({"status": "success", "message": "Employee Created Successfully"})
+    return jsonify({"status": "success", "message": "Quotation submitted"})
 
 # ==========================
-# 🔥 FIXED PART (THIS WAS MISSING)
+# GET QUOTATIONS
 # ==========================
 @app.route('/get-quotations')
 def get_quotations():
-
     quotations = Quotation.query.all()
 
     return jsonify([
@@ -280,7 +221,7 @@ def get_quotations():
             "price": q.price,
             "delivery_days": q.delivery_days,
             "comments": q.comments,
-            "status": q.status if hasattr(q, "status") else "pending"
+            "status": q.status
         }
         for q in quotations
     ])
