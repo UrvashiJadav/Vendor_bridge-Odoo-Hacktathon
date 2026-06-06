@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Register Page</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+
+<style>
+body {
+    background: linear-gradient(135deg, #f5f7fa 0%, #b5e2fa 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.box {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 2.5rem 2rem;
+    width: 100%;
+    max-width: 380px;
+    box-sizing: border-box;
+    box-shadow: 0 20px 50px rgba(3, 4, 94, 0.05);
+    border: 1px solid rgba(181, 226, 250, 0.35);
+}
+
+h1 {
+    font-size: 26px;
+    font-weight: 800;
+    color: #03045e;
+    margin: 0 0 16px;
+    letter-spacing: -0.5px;
+}
+
+.form-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.field {
+    display: flex;
+    flex-direction: column;
+}
+
+.field label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #03045e;
+    margin-bottom: 4px;
+    text-align: left;
+}
+
+.field input {
+    width: 100%;
+    box-sizing: border-box;
+    background: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 11px 14px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    color: #03045e;
+    outline: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.field input::placeholder {
+    color: #cbd5e1;
+    font-weight: 400;
+}
+
+.field input:hover {
+    border-color: #cbd5e1;
+    background: #f1f5f9;
+}
+
+.field input:focus {
+    border-color: #0077b6;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(0, 119, 182, 0.12);
+}
+
+button {
+    width: 100%;
+    padding: 13px;
+    background: linear-gradient(135deg, #0077b6 0%, #03045e 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 18px;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 12px rgba(3, 4, 94, 0.15);
+    letter-spacing: 0.3px;
+}
+
+button:hover {
+    background: linear-gradient(135deg, #008cd4 0%, #005685 100%);
+    box-shadow: 0 6px 16px rgba(3, 4, 94, 0.2);
+    transform: translateY(-1px);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+#result {
+    margin-top: 14px;
+    text-align: center;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    min-height: 18px;
+}
+
+.box::before {
+    content: "Create Account";
+    display: block; 
+    width: max-content;
+    color: #0077b6;
+    font-size: 10px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    background: rgba(0, 119, 182, 0.06);
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.footer {
+    text-align: center;
+    font-size: 13px;
+    color: #64748b;
+    margin-top: 16px;
+    margin-bottom: 0;
+    font-weight: 500;
+}
+
+.footer a {
+    color: #0077b6;
+    text-decoration: none;
+    font-weight: 600;
+    margin-left: 4px;
+}
+
+.footer a:hover {
+    color: #03045e;
+    text-decoration: underline;
+}
+
+@media (max-width: 500px) {
+    .box {
+        padding: 2rem 1.5rem;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+
+    <h1>Registration</h1>
+
+    <div class="form-grid">
+        <div class="field">
+            <label>Full Name</label>
+            <input type="text" id="nameid" placeholder="Enter full name">
+        </div>
+
+        <div class="field">
+            <label>Username</label>
+            <input type="text" id="usernameid" placeholder="Enter username">
+        </div>
+
+        <div class="field">
+            <label>Email</label>
+            <input type="email" id="emailid" placeholder="Enter email">
+        </div>
+
+        <div class="field">
+            <label>Password</label>
+            <input type="password" id="passwordid" placeholder="Enter password">
+        </div>
+
+        <div class="field">
+            <label>Confirm Password</label>
+            <input type="password" id="confirmid" placeholder="Confirm your password">
+        </div>
+    </div>
+
+    <button type="button" onclick="registerUser()">Register</button>
+
+    <p id="result"></p>
+
+    <p class="footer">
+        Already have an account?
+        <a href="/login">Sign In</a>
+    </p>
+
+</div>
+
+<script>
+async function registerUser() {
+
+    let name = document.getElementById("nameid").value;
+    let username = document.getElementById("usernameid").value;
+    let email = document.getElementById("emailid").value;
+    let password = document.getElementById("passwordid").value;
+    let confirm = document.getElementById("confirmid").value;
+
+    let result = document.getElementById("result");
+
+    if(!name || !username || !email || !password || !confirm){
+        result.innerText = "Please Fill all the Fields!";
+        result.style.color = "red";
+        return;
+    }
+
+    let emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if(!emailRegex.test(email)){
+        result.innerText = "Please enter a valid email address!";
+        result.style.color = "red";
+        return;
+    }
+
+    if(password !== confirm){
+        result.innerText = "Passwords do not match!";
+        result.style.color = "red";
+        return;
+    }
+
+    if (password.length < 6) {
+        result.innerText = "Password must be at least 6 characters long!";
+        result.style.color = "red";
+        return; 
+    }
+
+    result.innerText = "Sending request...";
+    result.style.color = "#0077b6";
+
+    try {
+        let response = await fetch("http://127.0.0.1:5000/register", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                name,
+                username,
+                email,
+                password
+            })
+        });
+
+        let data = await response.json();
+
+        if(data.status === "success"){
+            result.innerText = "Registration successful!";
+            result.style.color = "green";
+
+            setTimeout(() => {
+                window.location.href = "/login";
+            }, 1000);
+        }
+        else{
+            result.innerText = data.message || "Registration failed!";
+            result.style.color = "red";
+        }
+    } catch (error) {
+        console.error("Error executing layout connection:", error);
+        result.innerText = "Cannot connect to server. Check your backend configuration!";
+        result.style.color = "red";
+    }
+}
+</script>
+
+</body>
+</html>
