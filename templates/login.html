@@ -206,12 +206,10 @@ button {
     </p>
 
 </div>
-
 <script>
 
 function togglePassword(){
     let passwordField = document.getElementById("passwordid");
-
     passwordField.type =
         passwordField.type === "password"
         ? "text"
@@ -249,24 +247,23 @@ async function loginUser(){
 
         if(data.status === "success"){
 
-            localStorage.setItem("username", username);
-            localStorage.setItem("email", email);
+            // ✅ STORE LOGIN SESSION PROPERLY
+            localStorage.setItem("username", data.username);
+            localStorage.setItem("user_id", data.user_id || "");
+            localStorage.setItem("role", data.role);
 
+            // 🔥 ROLE BASED REDIRECTION FIXED
             if(data.role === "admin"){
-                window.location.href="/admin";
+                window.location.href = "/admin";
             }
-
-            else if(data.role === "manager"){
-                 window.location.href="/manager";
+            else if(data.role === "vendor"){
+                window.location.href = "/vendor-dashboard";
             }
-
-            else if(data.role === "procurement"){
-                window.location.href="/procurement";
-            }
-
             else{
-                 window.location.href="/vendor-dashboard";
+                result.innerText = "Unknown role";
+                result.style.color = "red";
             }
+
         }
         else{
             result.innerText = data.message;
@@ -281,6 +278,5 @@ async function loginUser(){
 }
 
 </script>
-
 </body>
 </html>
