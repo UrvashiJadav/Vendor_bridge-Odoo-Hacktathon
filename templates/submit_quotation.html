@@ -172,70 +172,48 @@ button{
     <p id="result"></p>
 
 </div>
-
 <script>
 
 async function submitQuotation(){
 
-    let rfq_id =
-    document.getElementById(
-        "rfqid"
-    ).value;
+    let rfq_id = document.getElementById("rfqid").value;
+    let vendor_id = document.getElementById("vendorid").value;
+    let price = document.getElementById("priceid").value;
+    let delivery_days = document.getElementById("deliveryid").value;
+    let comments = document.getElementById("commentsid").value;
 
-    let vendor_id =
-    document.getElementById(
-        "vendorid"
-    ).value;
+    let response = await fetch("http://127.0.0.1:5000/submit-quotation", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            rfq_id,
+            vendor_id,
+            price,
+            delivery_days,
+            comments
+        })
+    });
 
-    let price =
-    document.getElementById(
-        "priceid"
-    ).value;
+    let data = await response.json();
 
-    let delivery_days =
-    document.getElementById(
-        "deliveryid"
-    ).value;
+    let result = document.getElementById("result");
 
-    let comments =
-    document.getElementById(
-        "commentsid"
-    ).value;
+    if(data.status === "success"){
 
-    let response =
-    await fetch(
-        "http://127.0.0.1:5000/submit-quotation",
-        {
-            method:"POST",
+        result.innerText = "Quotation Submitted Successfully 🚀";
+        result.style.color = "green";
 
-            headers:{
-                "Content-Type":
-                "application/json"
-            },
+        // 🔥 WAIT 1 SECOND THEN REDIRECT
+        setTimeout(() => {
+            window.location.href = "/vendor-dashboard";
+        }, 1000);
 
-            body:JSON.stringify({
-                rfq_id,
-                vendor_id,
-                price,
-                delivery_days,
-                comments
-            })
-        }
-    );
-
-    let data =
-    await response.json();
-
-    let result =
-    document.getElementById(
-        "result"
-    );
-
-    result.innerText =
-    data.message;
-
-    result.style.color =
-    "green";
+    } else {
+        result.innerText = data.message || "Something went wrong";
+        result.style.color = "red";
+    }
 }
 
 </script>

@@ -15,7 +15,7 @@ body {
     align-items: center;
     min-height: 100vh;
     margin: 0;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'Inter', sans-serif;
 }
 
 .box {
@@ -24,139 +24,78 @@ body {
     padding: 3rem 2.5rem;
     width: 100%;
     max-width: 420px;
-    box-sizing: border-box;
-    box-shadow: 0 30px 70px rgba(3, 4, 94, 0.07),
-                0 10px 24px rgba(3, 4, 94, 0.03),
-                0 1px 3px rgba(0, 0, 0, 0.02);
+    box-shadow: 0 30px 70px rgba(3, 4, 94, 0.07);
     border: 1px solid rgba(181, 226, 250, 0.35);
-}
-
-.box::before {
-    content: "Login Account";
-    display: block;
-    width: max-content;
-    color: #0077b6;
-    font-size: 11px;
-    font-weight: 700;
-    margin-bottom: 14px;
-    text-transform: uppercase;
-    letter-spacing: 1.8px;
-    background: rgba(0, 119, 182, 0.06);
-    padding: 5px 10px;
-    border-radius: 6px;
 }
 
 h1 {
     font-size: 30px;
     font-weight: 800;
     color: #03045e;
-    margin: 0 0 4px;
 }
 
 .sub {
     font-size: 14px;
     color: #64748b;
-    margin: 0 0 24px;
+    margin-bottom: 24px;
 }
 
 .field {
     margin-bottom: 18px;
-    display: flex;
-    flex-direction: column;
 }
 
 .field label {
     font-size: 13px;
     font-weight: 600;
     color: #03045e;
+    display: block;
     margin-bottom: 6px;
 }
 
 .field input {
     width: 100%;
-    box-sizing: border-box;
-    background: #f8fafc;
-    border: 1.5px solid #e2e8f0;
-    border-radius: 12px;
     padding: 13px 16px;
+    border-radius: 12px;
+    border: 1.5px solid #e2e8f0;
+    background: #f8fafc;
     font-size: 14px;
-    color: #03045e;
     outline: none;
-    font-weight: 500;
-    transition: all 0.25s ease;
-}
-
-.field input::placeholder {
-    color: #a0aec0;
-}
-
-.field input:hover {
-    border-color: #cbd5e1;
-    background: #f1f5f9;
 }
 
 .field input:focus {
     border-color: #0077b6;
-    background: #ffffff;
-    box-shadow: 0 0 0 4px rgba(0, 119, 182, 0.14);
-}
-
-.show-password {
-    display: flex;
-    align-items: center;
-    font-size: 13px;
-    color: #475569;
-    gap: 8px;
-    margin-top: 12px;
-}
-
-.show-password input {
-    width: 16px;
-    height: 16px;
-    accent-color: #0077b6;
-}
-
-.forgot {
-    text-align: right;
-    margin-top: -18px;
-    margin-bottom: 24px;
-}
-
-.forgot a {
-    font-size: 13px;
-    color: #0077b6;
-    text-decoration: none;
+    box-shadow: 0 0 0 4px rgba(0,119,182,0.14);
+    background: #fff;
 }
 
 button {
     width: 100%;
     padding: 15px;
-    background: linear-gradient(135deg, #0077b6 0%, #054a91 50%, #03045e 100%);
+    background: linear-gradient(135deg, #0077b6, #054a91, #03045e);
     color: white;
     border: none;
     border-radius: 12px;
     font-size: 15px;
     font-weight: 600;
     cursor: pointer;
-    margin-top: 5px;
-    box-shadow: 0 4px 14px rgba(3, 4, 94, 0.18);
+}
+
+button:hover {
+    opacity: 0.95;
 }
 
 #result {
     margin-top: 16px;
-    text-align: center;
     font-size: 14px;
     font-weight: 600;
-    min-height: 20px;
+    text-align: center;
 }
 
 .footer {
+    margin-top: 20px;
     text-align: center;
     font-size: 14px;
-    color: #64748b;
-    margin-top: 24px;
 }
-
 .footer a {
     color: #0077b6;
     text-decoration: none;
@@ -187,41 +126,23 @@ button {
         <input type="password" id="passwordid" placeholder="Enter password">
     </div>
 
-    <div class="show-password">
-        <input type="checkbox" onclick="togglePassword()">
-        Show Password
-    </div>
-
-    <div class="forgot">
-        <a href="/forgot-password">Forgot Password?</a>
-    </div>
-
     <button onclick="loginUser()">Sign In</button>
 
     <p id="result"></p>
 
     <p class="footer">
-        New user?
-        <a href="/">Create Account</a>
+        New user? <a href="/">Create Account</a>
     </p>
 
 </div>
-<script>
 
-function togglePassword(){
-    let passwordField = document.getElementById("passwordid");
-    passwordField.type =
-        passwordField.type === "password"
-        ? "text"
-        : "password";
-}
+<script>
 
 async function loginUser(){
 
     let username = document.getElementById("usernameid").value;
     let email = document.getElementById("emailid").value;
     let password = document.getElementById("passwordid").value;
-
     let result = document.getElementById("result");
 
     if(!username || !email || !password){
@@ -230,7 +151,7 @@ async function loginUser(){
         return;
     }
 
-    try{
+    try {
         let response = await fetch("http://127.0.0.1:5000/login", {
             method: "POST",
             headers: {
@@ -245,32 +166,37 @@ async function loginUser(){
 
         let data = await response.json();
 
-        if(data.status === "success"){
+        if (data.status === "success") {
 
-            // ✅ STORE LOGIN SESSION PROPERLY
-            localStorage.setItem("username", data.username);
+            // ✅ STORE DATA PROPERLY
+            localStorage.setItem("username", data.username || "");
             localStorage.setItem("user_id", data.user_id || "");
-            localStorage.setItem("role", data.role);
+            localStorage.setItem("role", data.role || "");
 
-            // 🔥 ROLE BASED REDIRECTION FIXED
-            if(data.role === "admin"){
+            const role = (data.role || "").toLowerCase();
+
+            // 🔥 ROLE ROUTING FIXED
+            if (role === "admin") {
                 window.location.href = "/admin";
             }
-            else if(data.role === "vendor"){
+            else if (role === "vendor") {
                 window.location.href = "/vendor-dashboard";
             }
-            else{
-                result.innerText = "Unknown role";
+            else if (role === "manager") {
+                window.location.href = "/manager";
+            }
+            else {
+                result.innerText = "Unknown role: " + data.role;
                 result.style.color = "red";
             }
 
         }
-        else{
-            result.innerText = data.message;
+        else {
+            result.innerText = data.message || "Login failed";
             result.style.color = "red";
         }
 
-    } catch(error){
+    } catch (error) {
         console.log(error);
         result.innerText = "Server not reachable";
         result.style.color = "red";
@@ -278,5 +204,6 @@ async function loginUser(){
 }
 
 </script>
+
 </body>
 </html>

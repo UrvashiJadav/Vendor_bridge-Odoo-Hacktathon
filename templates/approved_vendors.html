@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Approved Vendors</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Inter', sans-serif;
+}
+
+body{
+    background: linear-gradient(135deg, #f5f7fa 0%, #d2edf9 50%, #b5e2fa 100%);
+    background-attachment: fixed;
+    display:flex;
+    min-height:100vh;
+}
+
+/* SIDEBAR */
+.sidebar{
+    width:260px;
+    background: linear-gradient(180deg, #0077b6 0%, #054a91 50%, #03045e 100%);
+    color: white;
+    padding:30px 20px;
+    box-shadow: 4px 0 25px rgba(3, 4, 94, 0.05);
+}
+
+.logo{
+    font-size:22px;
+    font-weight:800;
+    color:white;
+    margin-bottom:35px;
+    letter-spacing: 0.5px;
+    padding-left: 10px;
+}
+
+.menu{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+}
+
+.menu a{
+    text-decoration:none;
+    color: #e2e8f0;
+    padding:14px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius:12px;
+    transition: all 0.25s ease;
+}
+
+.menu a:hover{
+    background:rgba(255,255,255,0.15);
+    color:white;
+    padding-left: 20px;
+}
+
+/* MAIN CONTENT */
+.main{
+    flex:1;
+    padding:30px;
+    overflow-y: auto;
+}
+
+.topbar{
+    background: #ffffff;
+    border-radius:18px;
+    padding:18px 25px;
+    margin-bottom:25px;
+    box-shadow: 0 20px 40px rgba(3, 4, 94, 0.03);
+    border: 1px solid rgba(181, 226, 250, 0.35);
+}
+
+.topbar h2{
+    color:#03045e;
+    font-weight: 800;
+    font-size: 24px;
+}
+
+/* SEARCH BOX */
+.search-box{
+    width:320px;
+    box-sizing: border-box;
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 14px;
+    color: #03045e;
+    outline: none;
+    font-weight: 500;
+    margin-bottom: 25px;
+    box-shadow: 0 10px 25px rgba(3, 4, 94, 0.02);
+    transition: all 0.25s ease;
+}
+
+.search-box::placeholder {
+    color: #a0aec0;
+}
+
+.search-box:hover {
+    border-color: #cbd5e1;
+}
+
+.search-box:focus{
+    border-color: #0077b6;
+    box-shadow: 0 0 0 4px rgba(0, 119, 182, 0.14);
+}
+
+/* TABLE CONTAINER */
+.table-card{
+    background: #ffffff;
+    border-radius:18px;
+    overflow:hidden;
+    box-shadow: 0 20px 40px rgba(3, 4, 94, 0.03);
+    border: 1px solid rgba(181, 226, 250, 0.35);
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th{
+    background: #f8fafc;
+    color: #03045e;
+    font-weight: 700;
+    text-align:left;
+    padding:16px 20px;
+    font-size: 14px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+td{
+    padding:16px 20px;
+    border-bottom:1px solid #edf2f7;
+    color: #475569;
+    font-size: 14px;
+    vertical-align: middle;
+}
+
+tr:last-child td {
+    border-bottom: none;
+}
+
+/* STATUS & BUTTONS */
+.status{
+    color: #15803d;
+    font-weight: 600;
+    background: #dcfce7;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    display: inline-block;
+}
+
+.btn{
+    background: linear-gradient(135deg, #0077b6 0%, #03045e 100%);
+    color:white;
+    border:none;
+    padding:8px 16px;
+    border-radius:8px;
+    cursor:pointer;
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: 0 4px 10px rgba(3, 4, 94, 0.15);
+    transition: all 0.2s ease;
+}
+
+.btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+@media(max-width:900px){
+    body{
+        flex-direction:column;
+    }
+    .sidebar{
+        width:100%;
+    }
+    .search-box {
+        width: 100%;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="sidebar">
+    <div class="logo">Manager Panel</div>
+    <div class="menu">
+        <a href="/manager">Dashboard</a>
+        <a href="/pending-approvals">Pending Approvals</a>
+        <a href="/approved-vendors">Approved Vendors</a>
+        <a href="/rejected-vendors">Rejected Vendors</a>
+        <a href="/analytics">Analytics</a>
+    </div>
+</div>
+
+<div class="main">
+    <div class="topbar">
+        <h2>Approved Vendors</h2>
+    </div>
+
+    <input
+        type="text"
+        id="search"
+        class="search-box"
+        placeholder="Search Vendor by Name..."
+        onkeyup="searchVendor()">
+
+    <div class="table-card">
+        <table>
+            <thead>
+                <tr>
+                    <th>Vendor</th>
+                    <th>Company</th>
+                    <th>Status</th>
+                    <th>Approval Date</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <!-- Data will load here dynamically -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+loadApproved();
+
+async function loadApproved(){
+    try {
+        let response = await fetch("http://127.0.0.1:5000/get-approved-vendors");
+        let data = await response.json();
+        let rows = "";
+
+        data.forEach(vendor=>{
+            rows += `
+            <tr>
+                <td>${vendor.vendor}</td>
+                <td>${vendor.company}</td>
+                <td><span class="status">Approved</span></td>
+                <td>${vendor.date}</td>
+                <td>
+                    <button class="btn" onclick="viewVendor()">
+                        View
+                    </button>
+                </td>
+            </tr>
+            `;
+        });
+
+        document.getElementById("tableBody").innerHTML = rows;
+    } catch(err) {
+        console.error("Error fetching approved vendors:", err);
+    }
+}
+
+function viewVendor(){
+    window.location.href = "/vendor-details";
+}
+
+function searchVendor(){
+    let input = document.getElementById("search").value.toLowerCase();
+    let rows = document.querySelectorAll("tbody tr");
+
+    rows.forEach(row=>{
+        let vendor = row.cells[0].innerText.toLowerCase();
+        row.style.display = vendor.includes(input) ? "" : "none";
+    });
+}
+</script>
+
+</body>
+</html>

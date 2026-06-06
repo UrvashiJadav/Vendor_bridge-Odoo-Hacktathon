@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PO Approvals</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Inter', sans-serif;
+}
+
+body{
+    background: linear-gradient(135deg, #f5f7fa 0%, #d2edf9 50%, #b5e2fa 100%);
+    background-attachment: fixed;
+    display:flex;
+    min-height:100vh;
+}
+
+/* SIDEBAR */
+.sidebar{
+    width:260px;
+    background: linear-gradient(180deg, #0077b6 0%, #054a91 50%, #03045e 100%);
+    color:white;
+    padding:30px 20px;
+    box-shadow: 4px 0 25px rgba(3, 4, 94, 0.05);
+}
+
+.logo{
+    font-size:22px;
+    font-weight:800;
+    color:white;
+    margin-bottom:35px;
+    letter-spacing: 0.5px;
+    padding-left: 10px;
+}
+
+.menu a{
+    display:block;
+    text-decoration:none;
+    color: #e2e8f0;
+    padding:14px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius:12px;
+    margin-bottom:8px;
+    transition: all 0.25s ease;
+}
+
+.menu a:hover{
+    background:rgba(255,255,255,0.15);
+    color:white;
+    padding-left: 20px;
+}
+
+/* MAIN */
+.main{
+    flex:1;
+    padding:30px;
+    overflow-y: auto;
+}
+
+.main h2{
+    color:#03045e;
+    font-weight: 800;
+    font-size: 24px;
+    background: #ffffff;
+    border-radius:18px;
+    padding:18px 25px;
+    margin-bottom:25px;
+    box-shadow: 0 20px 40px rgba(3, 4, 94, 0.03);
+    border: 1px solid rgba(181, 226, 250, 0.35);
+}
+
+/* CONTAINER & PO CARDS */
+#container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.card{
+    background: #ffffff;
+    padding:25px;
+    border-radius:18px;
+    box-shadow: 0 20px 40px rgba(3, 4, 94, 0.03);
+    border: 1px solid rgba(181, 226, 250, 0.35);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 25px 50px rgba(3, 4, 94, 0.06);
+}
+
+.card h3{
+    color: #03045e;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.card p{
+    font-size: 14px;
+    color: #475569;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card p strong {
+    color: #03045e;
+}
+
+/* STATUS CHIPS */
+.status-badge {
+    font-weight: 600;
+    background: #fef3c7;
+    color: #d97706;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+}
+
+/* ACTIONS */
+.card-actions {
+    margin-top: 18px;
+    border-top: 1px solid #edf2f7;
+    padding-top: 15px;
+}
+
+.btn{
+    width: 100%;
+    border:none;
+    padding:10px 16px;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:600;
+    font-size: 13px;
+    transition: all 0.2s ease;
+}
+
+.approve{
+    background: transparent;
+    border: 1px solid #22c55e;
+    color: #22c55e;
+}
+
+.approve:hover{
+    background: #22c55e;
+    color: white;
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
+}
+
+@media(max-width:900px){
+    body{
+        flex-direction:column;
+    }
+    .sidebar{
+        width:100%;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+    <div class="logo">Manager Panel</div>
+    <div class="menu">
+        <a href="/manager">Dashboard</a>
+        <a href="/rfq-approvals">RFQ Approvals</a>
+        <a href="/po-approvals">PO Approvals</a>
+    </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+    <h2>Purchase Order Approvals</h2>
+    <div id="container"></div>
+</div>
+
+<script>
+async function loadPO(){
+    try {
+        let res = await fetch("/get-pos");
+        let data = await res.json();
+        let html = "";
+
+        data.forEach(po=>{
+            html += `
+            <div class="card">
+                <div>
+                    <h3>${po.vendor}</h3>
+                    <p><span>Amount:</span> <strong>₹${po.amount}</strong></p>
+                    <p><span>Status:</span> <span class="status-badge">${po.status}</span></p>
+                </div>
+                <div class="card-actions">
+                    <button class="btn approve" onclick="approvePO(${po.id})">Approve Order</button>
+                </div>
+            </div>
+            `;
+        });
+
+        document.getElementById("container").innerHTML = html || '<p style="color: #64748b; font-weight: 500;">No pending PO approvals found.</p>';
+    } catch(err) {
+        console.error("Error loading POs:", err);
+    }
+}
+
+async function approvePO(id){
+    try {
+        let res = await fetch("/approve-po",{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({id})
+        });
+
+        let data = await res.json();
+        alert(data.message);
+        loadPO();
+    } catch(err) {
+        console.error("Error approving PO:", err);
+    }
+}
+
+loadPO();
+</script>
+
+</body>
+</html>

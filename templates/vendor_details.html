@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vendor Details</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Inter', sans-serif;
+}
+
+body{
+    background: linear-gradient(135deg, #f5f7fa 0%, #d2edf9 50%, #b5e2fa 100%);
+    background-attachment: fixed;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+    min-height:100vh;
+}
+
+.card{
+    background: #ffffff;
+    padding: 35px 40px;
+    border-radius: 24px;
+    width: 100%;
+    max-width: 800px;
+    box-shadow: 0 25px 50px rgba(3, 4, 94, 0.05);
+    border: 1px solid rgba(181, 226, 250, 0.4);
+}
+
+h1{
+    color: #03045e;
+    font-weight: 800;
+    font-size: 26px;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #e2e8f0;
+    padding-bottom: 15px;
+}
+
+/* DATA LAYOUT GRID */
+#content {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.row{
+    background: #f8fafc;
+    border: 1px solid #edf2f7;
+    padding: 16px;
+    border-radius: 12px;
+    font-size: 15px;
+    color: #475569;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* Specific full width for long addresses */
+.row.address-row {
+    grid-column: span 2;
+}
+
+.label{
+    font-weight: 700;
+    color: #03045e;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* FOOTER ACTIONS */
+.action-container {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #edf2f7;
+    display: flex;
+    justify-content: flex-start;
+    gap: 12px;
+}
+
+.btn{
+    padding:12px 24px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:600;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.approve{
+    background: transparent;
+    border: 1px solid #22c55e;
+    color: #22c55e;
+}
+
+.approve:hover{
+    background: #22c55e;
+    color: white;
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
+}
+
+.reject{
+    background: transparent;
+    border: 1px solid #ef4444;
+    color: #ef4444;
+}
+
+.reject:hover{
+    background: #ef4444;
+    color: white;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+
+.back{
+    background: linear-gradient(135deg, #0077b6 0%, #03045e 100%);
+    color: white;
+    box-shadow: 0 4px 10px rgba(3, 4, 94, 0.15);
+    margin-left: auto; /* Push to the right end side */
+}
+
+.back:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.result{
+    margin-top:20px;
+    font-weight:700;
+    font-size: 15px;
+    color: #03045e;
+}
+
+.error-loading {
+    grid-column: span 2;
+    padding: 20px;
+    text-align: center;
+    color: #ef4444;
+    font-weight: 600;
+}
+
+@media(max-width: 600px){
+    #content {
+        grid-template-columns: 1fr;
+    }
+    .row.address-row {
+        grid-column: span 1;
+    }
+    .action-container {
+        flex-direction: column;
+    }
+    .back {
+        margin-left: 0;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+    <h1>Vendor Profile Details</h1>
+
+    <div id="content">
+        <div class="error-loading">Loading configuration data...</div>
+    </div>
+
+    <div class="action-container">
+        <button class="btn approve" onclick="approveVendor()">Approve Vendor</button>
+        <button class="btn reject" onclick="rejectVendor()">Reject Vendor</button>
+        <button class="btn back" onclick="window.location.href='/pending-approvals'">Back to Table</button>
+    </div>
+
+    <div id="result" class="result"></div>
+</div>
+
+<script>
+let vendorId = null;
+
+/* GET ID FROM URL */
+function getVendorId(){
+    const params = new URLSearchParams(window.location.search);
+    return params.get("id");
+}
+
+/* LOAD VENDOR */
+async function loadVendor(){
+    vendorId = getVendorId();
+
+    if(!vendorId){
+        document.getElementById("content").innerHTML =
+        `<div class="error-loading">❌ No Vendor ID Associated in Context URL</div>`;
+        return;
+    }
+
+    try {
+        let res = await fetch("/vendor/" + vendorId);
+        let data = await res.json();
+
+        document.getElementById("content").innerHTML = `
+            <div class="row"><span class="label">Vendor Name</span> ${data.vendor}</div>
+            <div class="row"><span class="label">Company / Entity</span> ${data.company}</div>
+            <div class="row"><span class="label">GST Number</span> ${data.gst}</div>
+            <div class="row"><span class="label">Category Segment</span> ${data.category}</div>
+            <div class="row"><span class="label">Email Address</span> ${data.email}</div>
+            <div class="row"><span class="label">Phone / Contact</span> ${data.phone}</div>
+            <div class="row address-row"><span class="label">Registered Office Address</span> ${data.address}</div>
+        `;
+    } catch(err) {
+        document.getElementById("content").innerHTML =
+        `<div class="error-loading">❌ System error connecting to data pipelines</div>`;
+    }
+}
+
+/* APPROVE */
+async function approveVendor(){
+    if(!vendorId) return;
+    try {
+        let res = await fetch("/approve-vendor", {
+            method:"POST",
+            headers:{ "Content-Type":"application/json" },
+            body: JSON.stringify({ id: vendorId })
+        });
+        let data = await res.json();
+        document.getElementById("result").innerHTML = "<span>✅ " + data.message + "</span>";
+    } catch(e) {
+        console.error(e);
+    }
+}
+
+/* REJECT */
+async function rejectVendor(){
+    if(!vendorId) return;
+    try {
+        let res = await fetch("/reject-vendor", {
+            method:"POST",
+            headers:{ "Content-Type":"application/json" },
+            body: JSON.stringify({ id: vendorId })
+        });
+        let data = await res.json();
+        document.getElementById("result").innerHTML = "<span style='color: #ef4444;'>❌ " + data.message + "</span>";
+    } catch(e) {
+        console.error(e);
+    }
+}
+
+loadVendor();
+</script>
+
+</body>
+</html>
