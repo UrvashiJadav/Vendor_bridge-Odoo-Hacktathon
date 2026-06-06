@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>My Quotations</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:'Inter',sans-serif;
+    background:
+    linear-gradient(
+        135deg,
+        #f5f7fa 0%,
+        #d2edf9 50%,
+        #b5e2fa 100%
+    );
+
+    min-height:100vh;
+    padding:40px;
+}
+
+.header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:30px;
+}
+
+h1{
+    color:#03045e;
+    font-size:34px;
+    font-weight:800;
+}
+
+.sub{
+    color:#64748b;
+    margin-top:5px;
+}
+
+.back-btn{
+    background:#03045e;
+    color:white;
+    text-decoration:none;
+    padding:12px 20px;
+    border-radius:12px;
+    font-weight:600;
+}
+
+.table-box{
+    background:white;
+    border-radius:24px;
+    padding:30px;
+
+    box-shadow:
+    0 20px 50px rgba(
+        3,
+        4,
+        94,
+        0.08
+    );
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th{
+    text-align:left;
+    color:#03045e;
+    padding:15px;
+    background:#eef7ff;
+}
+
+td{
+    padding:18px 15px;
+    border-bottom:1px solid #e5e7eb;
+}
+
+.status{
+    padding:8px 14px;
+    border-radius:999px;
+    font-size:13px;
+    font-weight:600;
+}
+
+.pending{
+    background:#fff7ed;
+    color:#ea580c;
+}
+
+.approved{
+    background:#ecfdf5;
+    color:#15803d;
+}
+
+.rejected{
+    background:#fef2f2;
+    color:#dc2626;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="header">
+
+    <div>
+        <h1>My Quotations</h1>
+        <p class="sub">
+            Track all submitted quotations
+        </p>
+    </div>
+
+    <a
+    href="/vendor-dashboard"
+    class="back-btn">
+        Dashboard
+    </a>
+
+</div>
+
+<div class="table-box">
+
+<table>
+
+<thead>
+<tr>
+    <th>ID</th>
+    <th>RFQ ID</th>
+    <th>Price</th>
+    <th>Delivery</th>
+    <th>Comments</th>
+    <th>Status</th>
+</tr>
+</thead>
+
+<tbody id="quotationTable">
+</tbody>
+
+</table>
+
+</div>
+
+<script>
+
+async function loadQuotations(){
+
+    let response =
+    await fetch(
+        "http://127.0.0.1:5000/get-quotations"
+    );
+
+    let data =
+    await response.json();
+
+    let table =
+    document.getElementById(
+        "quotationTable"
+    );
+
+    table.innerHTML = "";
+
+    data.forEach(q => {
+
+        table.innerHTML += `
+        <tr>
+            <td>${q.id}</td>
+            <td>${q.rfq_id}</td>
+            <td>₹${q.price}</td>
+            <td>${q.delivery_days} Days</td>
+            <td>${q.comments}</td>
+
+            <td>
+                <span class="
+                status
+                ${q.status}
+                ">
+                    ${q.status}
+                </span>
+            </td>
+        </tr>
+        `;
+    });
+}
+
+loadQuotations();
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Vendor RFQs</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+
+<style>
+
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body{
+    font-family: 'Inter', sans-serif;
+    background:
+    linear-gradient(
+        135deg,
+        #f5f7fa 0%,
+        #d2edf9 50%,
+        #b5e2fa 100%
+    );
+
+    min-height: 100vh;
+    padding: 40px;
+}
+
+.header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 35px;
+}
+
+.title h1{
+    color: #03045e;
+    font-size: 34px;
+    font-weight: 800;
+}
+
+.title p{
+    color: #64748b;
+    margin-top: 5px;
+    font-size: 15px;
+}
+
+.back-btn{
+    border: none;
+    cursor: pointer;
+
+    background:
+    linear-gradient(
+        135deg,
+        #0077b6 0%,
+        #03045e 100%
+    );
+
+    color: white;
+    padding: 13px 24px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.rfq-container{
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.rfq-card{
+    background: white;
+    border-radius: 22px;
+    padding: 28px;
+
+    box-shadow:
+    0 20px 50px rgba(
+        3,
+        4,
+        94,
+        0.05
+    );
+
+    border: 1px solid rgba(
+        181,
+        226,
+        250,
+        0.35
+    );
+}
+
+.rfq-card h2{
+    color: #03045e;
+    margin-bottom: 12px;
+}
+
+.rfq-info{
+    color: #64748b;
+    margin-bottom: 10px;
+    font-size: 14px;
+}
+
+.status{
+    display: inline-block;
+    background: rgba(0,119,182,0.1);
+    color: #0077b6;
+    padding: 7px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 16px;
+}
+
+button{
+    border: none;
+    cursor: pointer;
+
+    background:
+    linear-gradient(
+        135deg,
+        #0077b6 0%,
+        #054a91 50%,
+        #03045e 100%
+    );
+
+    color: white;
+    padding: 14px 22px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="header">
+
+    <div class="title">
+        <h1>Available RFQs</h1>
+        <p>View procurement requests</p>
+    </div>
+
+    <button
+    class="back-btn"
+    onclick="window.location.href='/vendor-dashboard'">
+        Dashboard
+    </button>
+
+</div>
+
+<div class="rfq-container">
+
+    <div class="rfq-card">
+
+        <h2>Laptop Purchase RFQ</h2>
+
+        <p class="rfq-info">
+            Quantity: 25
+        </p>
+
+        <p class="rfq-info">
+            Deadline: 12 June 2026
+        </p>
+
+        <div class="status">
+            Open
+        </div>
+
+        <br>
+
+        <button
+        onclick="window.location.href='/submit-quotation-page'">
+            View Details
+        </button>
+
+    </div>
+
+
+    <div class="rfq-card">
+
+        <h2>Office Chairs RFQ</h2>
+
+        <p class="rfq-info">
+            Quantity: 50
+        </p>
+
+        <p class="rfq-info">
+            Deadline: 18 June 2026
+        </p>
+
+        <div class="status">
+            Open
+        </div>
+
+        <br>
+
+        <button
+        onclick="window.location.href='/submit-quotation-page'">
+            View Details
+        </button>
+
+    </div>
+
+</div>
+
+</body>
+</html>
