@@ -1,35 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Admin Dashboard</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
 *{
     margin:0;
     padding:0;
     box-sizing:border-box;
-    font-family:'Inter',sans-serif;
+    font-family:'Inter', sans-serif;
 }
 
 body{
     display:flex;
     min-height:100vh;
-    background:#f1f5f9;
+    background: linear-gradient(135deg, #f5f7fa 0%, #d2edf9 50%, #b5e2fa 100%);
 }
 
+/* SIDEBAR */
 .sidebar{
     width:260px;
-    background:linear-gradient(180deg,#0f172a,#1e293b);
+    background: linear-gradient(180deg,#0077b6,#054a91,#03045e);
     color:white;
     padding:25px;
-    box-shadow:4px 0 20px rgba(0,0,0,0.08);
+    box-shadow:4px 0 20px rgba(0,0,0,0.1);
 }
 
 .sidebar h2{
-    font-size:24px;
-    font-weight:700;
+    font-size:22px;
+    font-weight:800;
     margin-bottom:35px;
 }
 
@@ -40,7 +44,7 @@ body{
 }
 
 .menu a{
-    color:#cbd5e1;
+    color:#e2e8f0;
     text-decoration:none;
     padding:14px 16px;
     border-radius:12px;
@@ -49,16 +53,18 @@ body{
 }
 
 .menu a:hover{
-    background:rgba(255,255,255,0.08);
+    background:rgba(255,255,255,0.15);
     color:white;
     transform:translateX(5px);
 }
 
+/* MAIN */
 .main{
     flex:1;
     padding:30px;
 }
 
+/* TOPBAR */
 .topbar{
     background:white;
     padding:18px 25px;
@@ -67,25 +73,44 @@ body{
     justify-content:space-between;
     align-items:center;
     margin-bottom:25px;
-    box-shadow:0 10px 30px rgba(15,23,42,.05);
+    box-shadow:0 10px 30px rgba(0,0,0,0.05);
 }
 
 .topbar div{
     font-size:18px;
     color:#1e293b;
+    font-weight:500;
 }
 
+/* LOGOUT */
+.topbar button{
+    background:transparent;
+    border:1px solid #ef4444;
+    color:#ef4444;
+    padding:10px 15px;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:600;
+}
+
+.topbar button:hover{
+    background:#ef4444;
+    color:white;
+}
+
+/* CARDS */
 .cards{
     display:grid;
     grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
     gap:20px;
+    margin-bottom:25px;
 }
 
 .card{
     background:white;
-    border-radius:20px;
+    border-radius:18px;
     padding:25px;
-    box-shadow:0 10px 30px rgba(15,23,42,.05);
+    box-shadow:0 10px 30px rgba(0,0,0,0.05);
     border:1px solid #e2e8f0;
 }
 
@@ -101,83 +126,67 @@ body{
     color:#0f172a;
 }
 
+/* FORM */
 h2{
     margin-bottom:18px;
     color:#0f172a;
-    font-size:24px;
+    font-size:22px;
+    font-weight:800;
 }
 
-input,
-select{
+.form-container{
+    background:white;
+    padding:30px;
+    border-radius:18px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.05);
+    border:1px solid #e2e8f0;
+}
+
+input, select{
     width:100%;
     padding:13px 15px;
     border:1px solid #dbe2ea;
     border-radius:12px;
     background:#f8fafc;
     font-size:14px;
+    margin-bottom:15px;
     outline:none;
-    transition:.3s;
 }
 
-input:focus,
-select:focus{
+input:focus, select:focus{
     border-color:#2563eb;
     background:white;
     box-shadow:0 0 0 4px rgba(37,99,235,.12);
 }
 
+/* BUTTON */
 button{
-    background:linear-gradient(135deg,#2563eb,#1d4ed8);
+    background:linear-gradient(135deg,#0077b6,#054a91,#03045e);
     color:white;
     border:none;
     padding:13px 20px;
     border-radius:12px;
     cursor:pointer;
     font-weight:600;
-    transition:.3s;
+    width:100%;
 }
 
 button:hover{
-    transform:translateY(-2px);
-    box-shadow:0 10px 20px rgba(37,99,235,.25);
+    opacity:0.95;
 }
 
-.topbar button{
-    background:linear-gradient(135deg,#ef4444,#dc2626);
-}
-
-.topbar button:hover{
-    box-shadow:0 10px 20px rgba(239,68,68,.25);
-}
-
+/* RESULT */
 #createResult{
     margin-top:15px;
     font-weight:600;
     color:#2563eb;
 }
 
-.card input,
-.card select{
-    margin-bottom:12px;
-}
-
+/* RESPONSIVE */
 @media(max-width:900px){
-
-    body{
-        flex-direction:column;
-    }
-
-    .sidebar{
-        width:100%;
-    }
-
-    .main{
-        padding:20px;
-    }
-
-    .cards{
-        grid-template-columns:1fr;
-    }
+    body{flex-direction:column;}
+    .sidebar{width:100%;}
+    .main{padding:20px;}
 }
 </style>
 
@@ -185,9 +194,9 @@ button:hover{
 
 <body>
 
+<!-- SIDEBAR -->
 <div class="sidebar">
     <h2>Admin Panel</h2>
-
     <div class="menu">
         <a href="#">Dashboard</a>
         <a href="#">Users</a>
@@ -197,18 +206,16 @@ button:hover{
     </div>
 </div>
 
+<!-- MAIN -->
 <div class="main">
 
     <div class="topbar">
-        <div>
-            Welcome, <b id="adminName">Admin</b>
-        </div>
-
+        <div>Welcome, <b id="adminName">Admin</b></div>
         <button onclick="logout()">Logout</button>
     </div>
 
+    <!-- CARDS -->
     <div class="cards">
-
         <div class="card">
             <h3>Total Users</h3>
             <h1 id="usersCount">0</h1>
@@ -223,125 +230,68 @@ button:hover{
             <h3>Revenue</h3>
             <h1>₹0</h1>
         </div>
+    </div>
+
+    <!-- CREATE EMPLOYEE -->
+    <h2>Create Employee</h2>
+
+    <div class="form-container">
+
+        <input type="text" id="empName" placeholder="Full Name">
+        <input type="text" id="empUsername" placeholder="Username">
+        <input type="email" id="empEmail" placeholder="Email">
+        <input type="password" id="empPassword" placeholder="Password">
+
+        <select id="empRole">
+            <option value="manager">Manager</option>
+            <option value="procurement">Procurement</option>
+        </select>
+
+        <button onclick="createEmployee()">Create Employee</button>
+        <p id="createResult"></p>
 
     </div>
 
-    <br> 
-    <br>
-<h2>Create Employee</h2>
-
-<div class="card">
-
-    <input type="text"
-           id="empName"
-           placeholder="Full Name">
-
-    <br><br>
-
-    <input type="text"
-           id="empUsername"
-           placeholder="Username">
-
-    <br><br>
-
-    <input type="email"
-           id="empEmail"
-           placeholder="Email">
-
-    <br><br>
-
-    <input type="password"
-           id="empPassword"
-           placeholder="Password">
-
-    <br><br>
-
-    <select id="empRole">
-
-        <option value="manager">
-            Manager
-        </option>
-
-        <option value="procurement">
-            Procurement
-        </option>
-
-    </select>
-
-    <br><br>
-
-    <button onclick="createEmployee()">
-        Create Employee
-    </button>
-
-    <p id="createResult"></p>
-
 </div>
-
-</div>
-
-
 
 <script>
 
-let admin = localStorage.getItem("admin");
+// admin name
+let admin = localStorage.getItem("username") || localStorage.getItem("admin");
 
 if(admin){
     document.getElementById("adminName").innerText = admin;
 }
 
+// fake stats
 document.getElementById("usersCount").innerText = 120;
 document.getElementById("ordersCount").innerText = 45;
 
+// logout fix
 function logout(){
+    localStorage.removeItem("username");
     localStorage.removeItem("admin");
-    alert("Logged out");
     window.location.href = "/login";
 }
 
-
+// create employee
 async function createEmployee(){
 
-    let name =
-        document.getElementById("empName").value;
+    let name = document.getElementById("empName").value;
+    let username = document.getElementById("empUsername").value;
+    let email = document.getElementById("empEmail").value;
+    let password = document.getElementById("empPassword").value;
+    let role = document.getElementById("empRole").value;
 
-    let username =
-        document.getElementById("empUsername").value;
-
-    let email =
-        document.getElementById("empEmail").value;
-
-    let password =
-        document.getElementById("empPassword").value;
-
-    let role =
-        document.getElementById("empRole").value;
-
-    let response =
-        await fetch(
-            "http://127.0.0.1:5000/create-employee",
-            {
-                method:"POST",
-                headers:{
-                    "Content-Type":"application/json"
-                },
-                body:JSON.stringify({
-                    name,
-                    username,
-                    email,
-                    password,
-                    role
-                })
-            }
-        );
+    let response = await fetch("http://127.0.0.1:5000/create-employee", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({ name, username, email, password, role })
+    });
 
     let data = await response.json();
-
-    document.getElementById(
-        "createResult"
-    ).innerText = data.message;
+    document.getElementById("createResult").innerText = data.message;
 }
-
 
 </script>
 

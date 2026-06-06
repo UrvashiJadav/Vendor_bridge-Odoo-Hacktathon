@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analytics</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Inter', sans-serif;
+}
+
+body{
+    background: linear-gradient(135deg, #f5f7fa 0%, #d2edf9 50%, #b5e2fa 100%);
+    background-attachment: fixed;
+    display:flex;
+    min-height:100vh;
+}
+
+/* SIDEBAR */
+.sidebar{
+    width:260px;
+    background: linear-gradient(180deg, #0077b6 0%, #054a91 50%, #03045e 100%);
+    color: white;
+    padding:30px 20px;
+    box-shadow: 4px 0 25px rgba(3, 4, 94, 0.05);
+}
+
+.logo{
+    font-size:22px;
+    font-weight:800;
+    color:white;
+    margin-bottom:35px;
+    letter-spacing: 0.5px;
+    padding-left: 10px;
+}
+
+.menu{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+}
+
+.menu a{
+    text-decoration:none;
+    color: #e2e8f0;
+    padding:14px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius:12px;
+    transition: all 0.25s ease;
+}
+
+.menu a:hover{
+    background:rgba(255,255,255,0.15);
+    color:white;
+    padding-left: 20px;
+}
+
+/* MAIN */
+.main{
+    flex:1;
+    padding:30px;
+    overflow-y: auto;
+}
+
+.topbar{
+    background: #ffffff;
+    border-radius:18px;
+    padding:18px 25px;
+    margin-bottom:25px;
+    box-shadow: 0 20px 40px rgba(3, 4, 94, 0.03);
+    border: 1px solid rgba(181, 226, 250, 0.35);
+}
+
+.topbar h2{
+    color:#03045e;
+    font-weight: 800;
+    font-size: 24px;
+}
+
+/* CARDS */
+.cards{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));
+    gap:20px;
+    margin-bottom:25px;
+}
+
+.card{
+    background: #ffffff;
+    padding:25px;
+    border-radius:18px;
+    box-shadow: 0 20px 40px rgba(3, 4, 94, 0.03);
+    border: 1px solid rgba(181, 226, 250, 0.3);
+    transition: transform 0.25s ease;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+}
+
+.card h3{
+    color:#64748b;
+    font-size:13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+.card h1{
+    margin-top:10px;
+    font-size:36px;
+    font-weight: 800;
+    color:#03045e;
+}
+
+/* CHARTS */
+.charts{
+    display:grid;
+    grid-template-columns: 2fr 1fr;
+    gap:20px;
+}
+
+.chart-box{
+    background: #ffffff;
+    padding:25px;
+    border-radius:18px;
+    box-shadow: 0 20px 40px rgba(3, 4, 94, 0.03);
+    border: 1px solid rgba(181, 226, 250, 0.35);
+}
+
+.chart-box h3{
+    color:#03045e;
+    font-weight: 700;
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+canvas{
+    max-width:100%;
+}
+
+@media(max-width:992px){
+    .charts {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media(max-width:900px){
+    body{
+        flex-direction:column;
+    }
+    .sidebar{
+        width:100%;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="sidebar">
+    <div class="logo">Manager Panel</div>
+    <div class="menu">
+        <a href="/manager">Dashboard</a>
+        <a href="/pending-approvals">Pending Approvals</a>
+        <a href="/approved-vendors">Approved Vendors</a>
+        <a href="/rejected-vendors">Rejected Vendors</a>
+        <a href="/analytics">Analytics</a>
+    </div>
+</div>
+
+<div class="main">
+    <div class="topbar">
+        <h2>Analytics Dashboard</h2>
+    </div>
+
+    <div class="cards">
+        <div class="card">
+            <h3>Total Vendors</h3>
+            <h1 id="total">0</h1>
+        </div>
+        <div class="card">
+            <h3>Approved</h3>
+            <h1 id="approved">0</h1>
+        </div>
+        <div class="card">
+            <h3>Pending</h3>
+            <h1 id="pending">0</h1>
+        </div>
+        <div class="card">
+            <h3>Rejected</h3>
+            <h1 id="rejected">0</h1>
+        </div>
+    </div>
+
+    <div class="charts">
+        <div class="chart-box">
+            <h3>Monthly Vendor Registration</h3>
+            <canvas id="barChart"></canvas>
+        </div>
+
+        <div class="chart-box">
+            <h3>Category Distribution</h3>
+            <canvas id="pieChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<script>
+async function loadAnalytics(){
+    try {
+        let res = await fetch("/analytics-data");
+        let data = await res.json();
+
+        /* CARDS */
+        document.getElementById("total").innerText = data.total_vendors;
+        document.getElementById("approved").innerText = data.approved;
+        document.getElementById("pending").innerText = data.pending;
+        document.getElementById("rejected").innerText = data.rejected;
+
+        /* BAR CHART */
+        new Chart(document.getElementById("barChart"), {
+            type: 'bar',
+            data: {
+                labels: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],
+                datasets: [{
+                    label: "Vendors",
+                    data: data.monthly,
+                    backgroundColor: 'rgba(0, 119, 182, 0.75)',
+                    borderColor: '#0077b6',
+                    borderWidth: 1,
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+
+        /* PIE CHART */
+        new Chart(document.getElementById("pieChart"), {
+            type: 'pie',
+            data: {
+                labels: Object.keys(data.categories),
+                datasets: [{
+                    data: Object.values(data.categories),
+                    backgroundColor: [
+                        '#03045e',
+                        '#0077b6',
+                        '#0096c7',
+                        '#00b4d8',
+                        '#48cae4',
+                        '#90e0ef'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true
+            }
+        });
+    } catch (e) {
+        console.error("Error loading analytics data:", e);
+    }
+}
+
+loadAnalytics();
+</script>
+
+</body>
+</html>

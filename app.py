@@ -13,7 +13,7 @@ app = Flask(__name__)
 CORS(app)
 
 # ==========================
-# SESSION SECRET (IMPORTANT)
+# SESSION
 # ==========================
 app.secret_key = "vendor_bridge_secret_key"
 
@@ -76,6 +76,10 @@ def home_page():
 def admin_page():
     return render_template('admin_dashboard.html')
 
+@app.route('/manager')
+def manager_page():
+    return render_template('manager_dashboard.html')
+
 @app.route('/vendor-dashboard')
 def vendor_dashboard():
     if session.get("role") != "vendor":
@@ -93,19 +97,6 @@ def submit_quotation_page():
 @app.route('/my-quotations')
 def my_quotations():
     return render_template('my_quotations.html')
-
-@app.route('/redirect-dashboard')
-def redirect_dashboard():
-
-    role = session.get("role")
-
-    if role == "admin":
-        return redirect("/admin")
-
-    elif role == "vendor":
-        return redirect("/vendor-dashboard")
-
-    return redirect("/login")
 
 # ==========================
 # REGISTER
@@ -135,7 +126,7 @@ def register():
     return jsonify({"status": "success", "message": "Registered"})
 
 # ==========================
-# LOGIN
+# LOGIN (SESSION FIXED)
 # ==========================
 @app.route('/login', methods=['POST'])
 def login():
@@ -145,10 +136,10 @@ def login():
     email = data.get("email", "").strip().lower()
     password = data.get("password")
 
-    # ADMIN LOGIN
+    # ADMIN
     if username == HARDCODED_ADMIN["username"] and email == HARDCODED_ADMIN["email"]:
         if password == HARDCODED_ADMIN["password"]:
-
+            session.clear()
             session["role"] = "admin"
             session["username"] = "admin"
 
@@ -157,7 +148,7 @@ def login():
                 "role": "admin"
             })
 
-    # USER LOGIN
+    # USER
     user = User.query.filter(
         (User.username == username) |
         (User.email == email)
@@ -169,6 +160,7 @@ def login():
     if not check_password_hash(user.password, password):
         return jsonify({"status": "error", "message": "Wrong password"})
 
+    session.clear()
     session["role"] = user.role
     session["user_id"] = user.id
     session["username"] = user.username
@@ -180,14 +172,101 @@ def login():
     })
 
 # ==========================
-# REDIRECT AFTER LOGIN (MAIN FIX)
+# POST LOGIN REDIRECT FIX
 # ==========================
 @app.route('/post-login')
 def post_login():
-    return redirect("/redirect-dashboard")
+    role = session.get("role")
+
+    if role == "admin":
+        return redirect("/admin")
+
+    elif role == "manager":
+        return redirect("/manager")
+
+    elif role == "vendor":
+        return redirect("/vendor-dashboard")
+
+    return redirect("/login")
 
 # ==========================
-# SUBMIT QUOTATION
+# CREATE EMPLOYEE (FIXED 404 ISSUE)
+# ==========================
+@app.route('/create-employee', methods=['POST'])
+def create_employee():
+
+    data = request.get_json()
+
+    if User.query.filter_by(username=data.get("username")).first():
+        return jsonify({"status": "error", "message": "Username exists"})
+
+    if User.query.filter_by(email=data.get("email")).first():
+        return jsonify({"status": "error", "message": "Email exists"})
+
+    user = User(
+        name=data.get("name"),
+        username=data.get("username"),
+        email=data.get("email"),
+        password=generate_password_hash(data.get("password")),
+        role=data.get("role")
+    )
+
+    db.session.add(user)
+    db.session.commit()
+
+    return jsonify({
+        "status": "success",
+        "message": "Employee Created Successfully"
+    })
+
+# ==========================
+# OTP SYSTEM
+# ==========================
+@app.route('/send-otp', methods=['POST'])
+def send_otp():
+    data = request.get_json()
+    email = data.get("email")
+
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return jsonify({"status": "error", "message": "Email not registered"})
+
+    otp = str(random.randint(100000, 999999))
+    otp_storage[email] = otp
+
+    send_email_otp(email, otp)
+
+    return jsonify({"status": "success", "message": "OTP Sent"})
+
+@app.route('/verify-otp', methods=['POST'])
+def verify_otp():
+    data = request.get_json()
+
+    email = data.get("email")
+    otp = data.get("otp")
+
+    if otp_storage.get(email) != otp:
+        return jsonify({"status": "error", "message": "Invalid OTP"})
+
+    return jsonify({"status": "success", "message": "Verified"})
+
+@app.route('/reset-password', methods=['POST'])
+def reset_password():
+    data = request.get_json()
+
+    user = User.query.filter_by(email=data.get("email")).first()
+    if not user:
+        return jsonify({"status": "error", "message": "User not found"})
+
+    user.password = generate_password_hash(data.get("password"))
+    db.session.commit()
+
+    otp_storage.pop(data.get("email"), None)
+
+    return jsonify({"status": "success", "message": "Password updated"})
+
+# ==========================
+# QUOTATIONS
 # ==========================
 @app.route('/submit-quotation', methods=['POST'])
 def submit_quotation():
@@ -207,9 +286,6 @@ def submit_quotation():
 
     return jsonify({"status": "success", "message": "Quotation submitted"})
 
-# ==========================
-# GET QUOTATIONS
-# ==========================
 @app.route('/get-quotations')
 def get_quotations():
     quotations = Quotation.query.all()
